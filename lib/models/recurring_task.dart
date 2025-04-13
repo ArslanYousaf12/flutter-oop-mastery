@@ -14,6 +14,7 @@ class RecurringTask extends Task {
     required this.frequency,
     required this.estimatedDuration,
     required DateTime firstDueDate,
+    super.isCompleted = false,
   }) : nextDueDate = firstDueDate;
 
   @override
@@ -47,5 +48,35 @@ class RecurringTask extends Task {
     } else {
       return 'Every ${frequency.inMinutes} ${frequency.inMinutes == 1 ? 'minute' : 'minutes'}';
     }
+  }
+
+  // JSON serialization implementation
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'type': 'RecurringTask',
+      'id': id,
+      'title': title,
+      'description': description,
+      'createdAt': createdAt.toIso8601String(),
+      'isCompleted': isCompleted,
+      'frequency': frequency.inMicroseconds,
+      'estimatedDuration': estimatedDuration.inMicroseconds,
+      'nextDueDate': nextDueDate.toIso8601String(),
+    };
+  }
+
+  // Factory method to create RecurringTask from JSON
+  factory RecurringTask.fromJson(Map<String, dynamic> json) {
+    return RecurringTask(
+      id: json['id'],
+      title: json['title'],
+      description: json['description'],
+      createdAt: DateTime.parse(json['createdAt']),
+      isCompleted: json['isCompleted'],
+      frequency: Duration(microseconds: json['frequency']),
+      estimatedDuration: Duration(microseconds: json['estimatedDuration']),
+      firstDueDate: DateTime.parse(json['nextDueDate']),
+    );
   }
 }

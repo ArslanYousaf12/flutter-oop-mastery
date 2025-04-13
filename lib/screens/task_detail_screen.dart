@@ -307,7 +307,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                         const SizedBox(width: 8),
                         Text(
                           'Deadline: ${_formatDate(task.deadline)}',
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 12),
                         ),
                       ],
                     ),

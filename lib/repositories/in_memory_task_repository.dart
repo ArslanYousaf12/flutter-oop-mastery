@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
 import '../models/quick_task.dart';
 import '../models/project_task.dart';
@@ -18,10 +20,46 @@ class InMemoryTaskRepository implements TaskRepository {
 
   // Encapsulated state - private field with public access methods
   final List<Task> _tasks = [];
+  static const String _tasksStorageKey = 'oop_flutter_mastery_tasks';
+
+  // Method to load tasks from shared preferences
+  Future<void> loadTasks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tasksJson = prefs.getStringList(_tasksStorageKey);
+
+      if (tasksJson != null && tasksJson.isNotEmpty) {
+        _tasks.clear();
+        for (final taskJson in tasksJson) {
+          final Map<String, dynamic> taskMap = jsonDecode(taskJson);
+          _tasks.add(Task.fromJson(taskMap));
+        }
+      }
+    } catch (e) {
+      print('Error loading tasks from SharedPreferences: $e');
+    }
+  }
+
+  // Method to save tasks to shared preferences
+  Future<void> _saveTasks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final List<String> tasksJson =
+          _tasks.map((task) => jsonEncode(task.toJson())).toList();
+
+      await prefs.setStringList(_tasksStorageKey, tasksJson);
+    } catch (e) {
+      print('Error saving tasks to SharedPreferences: $e');
+    }
+  }
 
   // Implementation of interface methods
   @override
   Future<List<Task>> getAllTasks() async {
+    // Make sure tasks are loaded before returning
+    if (_tasks.isEmpty) {
+      await loadTasks();
+    }
     return _tasks;
   }
 
@@ -37,6 +75,7 @@ class InMemoryTaskRepository implements TaskRepository {
   @override
   Future<void> addTask(Task task) async {
     _tasks.add(task);
+    await _saveTasks(); // Save after adding
   }
 
   @override
@@ -44,12 +83,14 @@ class InMemoryTaskRepository implements TaskRepository {
     final index = _tasks.indexWhere((t) => t.id == task.id);
     if (index >= 0) {
       _tasks[index] = task;
+      await _saveTasks(); // Save after updating
     }
   }
 
   @override
   Future<void> deleteTask(String id) async {
     _tasks.removeWhere((task) => task.id == id);
+    await _saveTasks(); // Save after deleting
   }
 
   @override
@@ -68,9 +109,9 @@ class InMemoryTaskRepository implements TaskRepository {
     if (_tasks.isNotEmpty) {
       return;
     }
-    
+
     final now = DateTime.now();
-    
+
     // Add a quick task
     await addTask(
       QuickTask(
@@ -81,7 +122,7 @@ class InMemoryTaskRepository implements TaskRepository {
         estimatedDuration: const Duration(minutes: 30),
       ),
     );
-    
+
     // Add a project task
     final projectTask = ProjectTask(
       id: '2',
@@ -91,7 +132,7 @@ class InMemoryTaskRepository implements TaskRepository {
       deadline: now.add(const Duration(days: 7)),
       priority: 'High',
     );
-    
+
     // Adding subtasks to demonstrate composition
     projectTask.addSubTask(
       QuickTask(
@@ -102,7 +143,7 @@ class InMemoryTaskRepository implements TaskRepository {
         estimatedDuration: const Duration(hours: 2),
       ),
     );
-    
+
     projectTask.addSubTask(
       QuickTask(
         id: '2.2',
@@ -112,9 +153,9 @@ class InMemoryTaskRepository implements TaskRepository {
         estimatedDuration: const Duration(hours: 1),
       ),
     );
-    
+
     await addTask(projectTask);
-    
+
     // Add a recurring task
     await addTask(
       RecurringTask(

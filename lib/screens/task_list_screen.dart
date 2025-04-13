@@ -42,17 +42,17 @@ class _TaskListScreenState extends State<TaskListScreen>
 
   Future<void> _loadTasks() async {
     setState(() => _isLoading = true);
-
+    
     try {
       // Get the singleton instance and use it directly
       final repository = InMemoryTaskRepository();
-
-      // Add sample tasks for demonstration
-      await repository.addSampleTasks();
-
-      // Load tasks from repository
+      
+      // Load tasks from shared preferences (removed sample tasks creation)
+      await repository.loadTasks();
+      
+      // Get all tasks from repository
       final tasks = await _taskService.getAllTasks();
-
+      
       setState(() {
         _tasks = tasks;
         _isLoading = false;
@@ -149,22 +149,23 @@ class _TaskListScreenState extends State<TaskListScreen>
           confirmDismiss: (direction) async {
             return await showDialog(
               context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Delete Task'),
-                content: Text(
-                  'Are you sure you want to delete "${task.title}"?',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('CANCEL'),
+              builder:
+                  (context) => AlertDialog(
+                    title: const Text('Delete Task'),
+                    content: Text(
+                      'Are you sure you want to delete "${task.title}"?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('CANCEL'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('DELETE'),
+                      ),
+                    ],
                   ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text('DELETE'),
-                  ),
-                ],
-              ),
             );
           },
           onDismissed: (direction) {
