@@ -42,17 +42,17 @@ class _TaskListScreenState extends State<TaskListScreen>
 
   Future<void> _loadTasks() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Get the singleton instance and use it directly
       final repository = InMemoryTaskRepository();
-      
+
       // Load tasks from shared preferences (removed sample tasks creation)
       await repository.loadTasks();
-      
+
       // Get all tasks from repository
       final tasks = await _taskService.getAllTasks();
-      
+
       setState(() {
         _tasks = tasks;
         _isLoading = false;
