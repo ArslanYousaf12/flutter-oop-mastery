@@ -2,7 +2,8 @@ import 'task.dart';
 
 // ProjectTask class demonstrates both inheritance and composition
 class ProjectTask extends Task {
-  final List<Task> subTasks; // Composition: ProjectTask contains other tasks
+  // Changed from final to late final and made it a mutable list
+  late final List<Task> subTasks; 
   final DateTime deadline;
   final String priority;
 
@@ -13,8 +14,11 @@ class ProjectTask extends Task {
     required super.createdAt,
     required this.deadline,
     required this.priority,
-    this.subTasks = const [],
-  });
+    List<Task>? subTasks,
+  }) {
+    // Initialize with an empty mutable list or the provided list
+    this.subTasks = subTasks?.toList() ?? [];
+  }
 
   // Implementation of the abstract method
   @override

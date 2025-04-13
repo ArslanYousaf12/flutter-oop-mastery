@@ -64,8 +64,13 @@ class InMemoryTaskRepository implements TaskRepository {
 
   // Method to add sample data for demonstration
   Future<void> addSampleTasks() async {
+    // Only add sample tasks if the repository is empty
+    if (_tasks.isNotEmpty) {
+      return;
+    }
+    
     final now = DateTime.now();
-
+    
     // Add a quick task
     await addTask(
       QuickTask(
@@ -76,7 +81,7 @@ class InMemoryTaskRepository implements TaskRepository {
         estimatedDuration: const Duration(minutes: 30),
       ),
     );
-
+    
     // Add a project task
     final projectTask = ProjectTask(
       id: '2',
@@ -86,7 +91,7 @@ class InMemoryTaskRepository implements TaskRepository {
       deadline: now.add(const Duration(days: 7)),
       priority: 'High',
     );
-
+    
     // Adding subtasks to demonstrate composition
     projectTask.addSubTask(
       QuickTask(
@@ -97,7 +102,7 @@ class InMemoryTaskRepository implements TaskRepository {
         estimatedDuration: const Duration(hours: 2),
       ),
     );
-
+    
     projectTask.addSubTask(
       QuickTask(
         id: '2.2',
@@ -107,9 +112,9 @@ class InMemoryTaskRepository implements TaskRepository {
         estimatedDuration: const Duration(hours: 1),
       ),
     );
-
+    
     await addTask(projectTask);
-
+    
     // Add a recurring task
     await addTask(
       RecurringTask(
